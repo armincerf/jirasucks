@@ -12,6 +12,7 @@ import type { Description, Issue } from "./issue";
 import { queryTypes, useQueryState, useQueryStates } from "next-usequerystate";
 import AboutModal from "./about-modal";
 import { noop } from "lodash";
+import { useRouter } from "next/router";
 
 interface Props {
   // Show menu (for small screen only)
@@ -55,6 +56,10 @@ const LeftMenu = ({
     }
   });
 
+  const router = useRouter();
+  const { owner, name } = router.query;
+  const repo = `${owner}/${name}`;
+
   return (
     <>
       <div className={classes} ref={ref}>
@@ -76,10 +81,7 @@ const LeftMenu = ({
                 onCloseMenu && onCloseMenu();
               }}
             >
-              <div className="w-8 text-white">
-                <ReactLogo />
-              </div>
-              <div className="text-sm font-medium">React</div>
+              <div className="text-sm font-medium">{repo}</div>
             </div>
           </div>
 
@@ -100,7 +102,7 @@ const LeftMenu = ({
           <SearchBox placeholder="Search" className="mt-5" />
           {/* actions */}
 
-          <ItemGroup title="React Issues">
+          <ItemGroup title="Issues">
             <div
               className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
               onMouseDown={async () => {

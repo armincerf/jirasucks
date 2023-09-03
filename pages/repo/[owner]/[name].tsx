@@ -5,8 +5,13 @@ import App from "frontend/app";
 import Pusher from "pusher-js";
 import { UndoManager } from "@rocicorp/undo";
 import { transact } from "backend/pg";
-import { createDatabase, getLatestIssue, initSpace } from "backend/data";
+import {
+  createDatabase,
+  getLatestIssueUpdateTime,
+  initSpace,
+} from "backend/data";
 import type { GetServerSideProps } from "next";
+import { genSpaceID } from "util/common";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const params = ctx.params;
@@ -16,13 +21,18 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   console.log("params", params);
   const repoOwner = params.owner.toString();
   const repoName = params.name.toString();
+  const sync = !!params.sync?.toString();
+  const since = params.since?.toString();
   const spaceID = await transact(async (executor) => {
     await createDatabase(executor);
-    const latestIssue = await getLatestIssue(
-      executor,
-      `${repoOwner}/${repoName}-space`
-    );
-    return initSpace(executor, repoName, repoOwner, latestIssue);
+    const latestIssueTime = since
+      ? new Date(since)
+      : await getLatestIssueUpdateTime(
+        executor,
+        genSpaceID({ repoOwner, repoName })
+      );
+    console.log("latestIssue", latestIssueTime);
+    return initSpace(executor, repoName, repoOwner, latestIssueTime, sync);
   });
   return {
     props: {

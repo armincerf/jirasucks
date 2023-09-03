@@ -1,13 +1,13 @@
 import type { JSONValue } from "replicache";
-import { z } from "zod";
 import type { Executor } from "./pg";
 import { ReplicacheTransaction } from "./replicache-transaction";
 import type { Issue, Comment, Description } from "../frontend/issue";
 import { mutators } from "../frontend/mutators";
 import { flatten } from "lodash";
 import { getSyncOrder } from "./sync-order";
-import type { TIssue } from "./issue-downloader";
 import { getIssueData } from "./import-issues";
+import { genSpaceID } from "util/common";
+import { z } from "zod";
 
 export type SampleData = {
   issue: Issue;
@@ -22,7 +22,7 @@ export async function createDatabase(executor: Executor) {
   }
 
   if (schemaVersion === 2) {
-    console.log("schemaVersion is 2 - nothing to do");
+    console.log("schemaVersion is 2 - no tables to create");
     return;
   }
 
@@ -103,9 +103,10 @@ export async function initSpace(
   executor: Executor,
   repoName: string,
   repoOwner: string,
-  latestIssue: TIssue | undefined
+  latestIssueTime: Date | undefined,
+  sync: boolean = false
 ) {
-  const spaceName = `${repoOwner}/${repoName}-space`;
+  const spaceName = genSpaceID({ repoName, repoOwner });
   const { rows: baseSpaceRows } = await executor(
     `select version from space where id = $1`,
     [spaceName]
@@ -117,7 +118,12 @@ export async function initSpace(
   }
   const start = Date.now();
   // We have to batch insertions to work around postgres command size limits
-  const latestData = await getIssueData({ repoName, repoOwner, latestIssue });
+  const latestData = await getIssueData({
+    repoName,
+    repoOwner,
+    latestIssueTime,
+    sync,
+  });
   const sampleDataBatchs: SampleData[] = [];
   for (let i = 0; i < latestData.length; i++) {
     if (i % 1000 === 0) {
@@ -177,7 +183,10 @@ export async function getEntry(
   return JSON.parse(value);
 }
 
-export async function getLatestIssue(executor: Executor, spaceID: string) {
+export async function getLatestIssueUpdateTime(
+  executor: Executor,
+  spaceID: string
+) {
   const { rows } = await executor(
     `
     SELECT key, value, deleted
@@ -192,7 +201,8 @@ export async function getLatestIssue(executor: Executor, spaceID: string) {
   if (!value) {
     return undefined;
   }
-  return JSON.parse(value) as TIssue;
+  const issue = JSON.parse(value) as Issue;
+  return new Date(issue.modified);
 }
 
 export async function putEntries(

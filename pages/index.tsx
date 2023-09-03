@@ -1,5 +1,10 @@
 import { transact } from "../backend/pg";
-import { createDatabase, getLatestIssue, initSpace } from "../backend/data";
+import {
+  createDatabase,
+  getLatestIssueUpdateTime,
+  initSpace,
+} from "../backend/data";
+import { genSpaceID } from "util/common";
 
 function Page() {
   return "";
@@ -8,11 +13,11 @@ function Page() {
 export async function getServerSideProps() {
   const spaceID = await transact(async (executor) => {
     await createDatabase(executor);
-    const latestReactIssue = await getLatestIssue(
+    const latestReactIssueTime = await getLatestIssueUpdateTime(
       executor,
-      "facebook/react-space"
+      genSpaceID({ repoOwner: "facebook", repoName: "react" })
     );
-    return initSpace(executor, "react", "facebook", latestReactIssue);
+    return initSpace(executor, "react", "facebook", latestReactIssueTime);
   });
   return {
     redirect: {

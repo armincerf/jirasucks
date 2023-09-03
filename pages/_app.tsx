@@ -1,4 +1,3 @@
-import React from "react";
 import type { AppProps } from "next/app";
 
 import Head from "next/head";
@@ -9,7 +8,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Repliear</title>
+        <title>Jira sucks and so do you</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link
           rel="icon"

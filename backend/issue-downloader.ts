@@ -1,11 +1,5 @@
 import { Octokit } from "@octokit/rest";
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
 const octokit = new Octokit({
   auth: "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",
   userAgent: "issue-downloader",
@@ -38,39 +32,41 @@ export type TComment = {
   creator_user_login: string;
 };
 
-function fetchComments({
+async function fetchComments({
   repoName,
   repoOwner,
   issueNumber,
-  commentsArray,
 }: {
   repoName: string;
   repoOwner: string;
   issueNumber: number;
-  commentsArray: TComment[];
 }) {
   console.log(`Fetching comments for issue ${issueNumber}`);
-  octokit
-    .paginate(octokit.rest.issues.listComments, {
+  const commentIterator = octokit.paginate.iterator(
+    octokit.rest.issues.listComments,
+    {
       owner: repoOwner,
       repo: repoName,
       issue_number: issueNumber,
-    })
-    .then((comments) => {
-      comments.map((comment) => {
-        // write each block of comments to a file
-        const formattedComment: TComment = {
-          number: issueNumber,
-          comment_id: comment.id.toString(),
-          body: comment.body || "",
-          updated_at: comment.updated_at,
-          created_at: comment.created_at,
-          creator_user_login: comment.user ? comment.user.login : "anon",
-        };
-        commentsArray.push(formattedComment);
-      });
-      sleep(100);
+    }
+  );
+  const coms: TComment[] = [];
+  for await (const { data: comments } of commentIterator) {
+    console.log(`Fetched ${comments.length} comments for issue ${issueNumber}`);
+    comments.map((comment) => {
+      // write each block of comments to a file
+      const formattedComment: TComment = {
+        number: issueNumber,
+        comment_id: comment.id.toString(),
+        body: comment.body || "",
+        updated_at: comment.updated_at,
+        created_at: comment.created_at,
+        creator_user_login: comment.user ? comment.user.login : "anon",
+      };
+      coms.push(formattedComment);
     });
+  }
+  return coms;
 }
 
 export type TIssue = {
@@ -97,15 +93,22 @@ export async function getMissingIssues({
 }: {
   repoName: string;
   repoOwner: string;
-  updatedAt?: Date;
+  updatedAt: Date | undefined;
 }) {
-  console.log(`Fetching issues for ${repoName}, last updated at ${updatedAt}`);
+  console.log(
+    `Fetching issues for ${repoOwner}/${repoName}, last updated at ${updatedAt}`
+  );
   let issuesArray: TIssue[] = [];
   let commentsArray: TComment[] = [];
-  const updatedISO = updatedAt?.toISOString();
+  const updatedDatePlusOneDay = updatedAt
+    ? new Date(updatedAt.getTime() + 86400000)
+    : undefined;
+
+  const updatedISO = updatedDatePlusOneDay?.toISOString();
   const baseOpts = {
     owner: repoOwner,
     repo: repoName,
+    per_page: 100,
   };
   // if updatedAt is provided, only fetch issues updated after that date
   const opts = updatedISO
@@ -114,9 +117,14 @@ export async function getMissingIssues({
       since: updatedISO,
     }
     : baseOpts;
-  octokit.paginate(octokit.rest.issues.listForRepo, opts).then((issues) => {
-    console.log(`Fetched ${issues.length} issues for ${repoName}`);
-    issues.map((issue) => {
+  console.log("opts", opts);
+  const issueIterator = octokit.paginate.iterator(
+    octokit.rest.issues.listForRepo,
+    opts
+  );
+  for await (const { data: issues } of issueIterator) {
+    console.log(`Fetched ${issues.length} issues`);
+    for await (const issue of issues) {
       // write each block of issues to a file
       // for each issue call fetchComments
       const formattedIssue: TIssue = {
@@ -129,15 +137,21 @@ export async function getMissingIssues({
         creator_user_login: issue.user ? issue.user.login : "anon",
       };
       issuesArray.push(formattedIssue);
-      fetchComments({
+      const newComments = await fetchComments({
         repoName,
         repoOwner,
         issueNumber: issue.number,
-        commentsArray,
       });
-    });
-    sleep(100);
-  });
+      console.log(
+        `Fetched ${newComments.length} comments for issue ${issue.number}`
+      );
+      commentsArray = commentsArray.concat(newComments);
+    }
+
+    console.log(
+      `Fetched ${issuesArray.length} and ${commentsArray.length} issues for ${repoName}`
+    );
+  }
   return {
     issuesArray,
     commentsArray,

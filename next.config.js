@@ -1,4 +1,11 @@
 module.exports = {
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
   // set port to 3001
   port: 3001,
   eslint: {

@@ -71,15 +71,11 @@ export default function AboutModal({ isOpen, onDismiss }: Props) {
       </div>
       <div className="flex flex-col flex-1 px-8 pt-4 pb-8 overflow-y-auto">
         <P noTopMargin>
-          Repliear is a loving &hearts; tribute to the{" "}
+          This is a loving &hearts; tribute to the{" "}
           <A href="https://linear.app/">Linear issue tracker</A> built with{" "}
-          <A href="https://replicache.dev">Replicache.</A>
-        </P>
-
-        <P>
-          Replicache makes it much easier to build apps like Linear. To show
-          how, this demo recreates a subset of the Linear experience, focusing
-          on the distinctive features that are especially difficult to engineer.
+          <A href="https://replicache.dev">Replicache</A>
+          {" and "}
+          <A href="https://supabase.com/">Supabase</A>.
         </P>
 
         <H1>Key Features</H1>
@@ -90,35 +86,17 @@ export default function AboutModal({ isOpen, onDismiss }: Props) {
           }}
           className="text-sm font-normal text-gray-100"
         >
-          <Feature title="Dataset">
-            The entire React issue db as of April 2022. ~11k issues, ~50 MB of
-            data.
-          </Feature>
           <Feature title="Spinner-free">
             Everything in the UI responds instantly, without progress bars.
           </Feature>
           <Feature title="Realtime sync">
             Any change made by one user is seen ~instantly by others. Open in
-            two windows to test. Even works across views!
+            two windows to test.
           </Feature>
           <Feature title="Complex filters">
             Use the filter picker in the top nav to build complex filters.
           </Feature>
         </ul>
-
-        <H1>Learn More</H1>
-        <P>
-          Learn more at <A href="https://replicache.dev">replicache.dev</A>, or
-          come visit us in <A href="https://discord.replicache.dev">Discord</A>.
-        </P>
-
-        <P>
-          Check out the source for this demo at{" "}
-          <A href="https://github.com/rocicorp/repliear">
-            github.com/rocicorp/repliear
-          </A>
-          .
-        </P>
       </div>
     </div>
   );

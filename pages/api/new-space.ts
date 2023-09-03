@@ -1,6 +1,11 @@
-import { createDatabase, getLatestIssue, initSpace } from "backend/data";
+import {
+  createDatabase,
+  getLatestIssueUpdateTime,
+  initSpace,
+} from "backend/data";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { transact } from "backend/pg";
+import { genSpaceID } from "util/common";
 
 const newSpace = async (req: NextApiRequest, res: NextApiResponse) => {
   console.log("newSpace", req.query);
@@ -15,11 +20,11 @@ const newSpace = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const spaceID = await transact(async (executor) => {
       await createDatabase(executor);
-      const latestIssue = await getLatestIssue(
+      const latestIssueTime = await getLatestIssueUpdateTime(
         executor,
-        `${repoOwner}/${repoName}-space`
+        genSpaceID({ repoName, repoOwner })
       );
-      return initSpace(executor, repoName, repoOwner, latestIssue);
+      return initSpace(executor, repoName, repoOwner, latestIssueTime);
     });
     res.status(200);
     res.json({ spaceID });

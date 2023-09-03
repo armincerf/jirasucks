@@ -7,18 +7,27 @@ import type { SampleData } from "./data";
 export async function getIssueData({
   repoOwner,
   repoName,
-  latestIssue,
+  latestIssueTime,
+  sync,
 }: {
   repoOwner: string;
   repoName: string;
-  latestIssue: TIssue | undefined;
+  latestIssueTime: Date | undefined;
+  sync?: boolean;
 }) {
-  const updatedAtString = latestIssue?.updated_at;
-  const updatedAt = new Date(updatedAtString || 0);
-  const { issuesArray: issuesDefault, commentsArray } = await getMissingIssues({
-    repoOwner,
-    repoName,
-    updatedAt,
+  console.log("latestIssue", latestIssueTime);
+  const shouldSync = latestIssueTime === undefined || sync;
+  const { issuesArray: issuesDefault, commentsArray } = shouldSync
+    ? await getMissingIssues({
+      repoOwner,
+      repoName,
+      updatedAt: latestIssueTime,
+    })
+    : { issuesArray: [], commentsArray: [] };
+
+  console.log("fetched issues", {
+    issueCount: issuesDefault.length,
+    commentsCount: commentsArray.length,
   });
 
   const commentsForIssue = (issue: TIssue) => {
