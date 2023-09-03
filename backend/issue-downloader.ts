@@ -35,29 +35,30 @@ export type TComment = {
 async function fetchComments({
   repoName,
   repoOwner,
-  issueNumber,
 }: {
   repoName: string;
   repoOwner: string;
-  issueNumber: number;
 }) {
-  console.log(`Fetching comments for issue ${issueNumber}`);
   const commentIterator = octokit.paginate.iterator(
-    octokit.rest.issues.listComments,
+    octokit.rest.issues.listCommentsForRepo,
     {
       owner: repoOwner,
       repo: repoName,
-      issue_number: issueNumber,
       per_page: 100,
+      sort: "created",
+      direction: "desc",
     }
   );
   const coms: TComment[] = [];
   for await (const { data: comments } of commentIterator) {
-    console.log(`Fetched ${comments.length} comments for issue ${issueNumber}`);
+    console.log(`Fetched ${comments.length} comments`);
     comments.map((comment) => {
-      // write each block of comments to a file
+      const issue = comment.issue_url.split("/").pop();
+      if (!issue) {
+        throw new Error("No issue number");
+      }
       const formattedComment: TComment = {
-        number: issueNumber,
+        number: parseInt(issue),
         comment_id: comment.id.toString(),
         body: comment.body || "",
         updated_at: comment.updated_at,
@@ -66,7 +67,11 @@ async function fetchComments({
       };
       coms.push(formattedComment);
     });
+    if (coms.length > 1000) {
+      break;
+    }
   }
+  console.log(`Fetched ${coms.length} comments in total`);
   return coms;
 }
 
@@ -100,7 +105,6 @@ export async function getMissingIssues({
     `Fetching issues for ${repoOwner}/${repoName}, last updated at ${updatedAt}`
   );
   let issuesArray: TIssue[] = [];
-  let commentsArray: TComment[] = [];
   const updatedDatePlusOneDay = updatedAt
     ? new Date(updatedAt.getTime() + 86400000)
     : undefined;
@@ -140,12 +144,15 @@ export async function getMissingIssues({
       issuesArray.push(formattedIssue);
     }
 
-    console.log(
-      `Fetched ${issuesArray.length} and ${commentsArray.length} issues for ${repoName}`
-    );
+    console.log(`Fetched ${issuesArray.length} issues for ${repoName}`);
   }
+  const comments = await fetchComments({
+    repoName,
+    repoOwner,
+  });
+
   return {
     issuesArray,
-    commentsArray,
+    comments,
   };
 }

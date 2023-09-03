@@ -17,24 +17,23 @@ export async function getIssueData({
 }) {
   console.log("latestIssue", latestIssueTime);
   const shouldSync = latestIssueTime === undefined || sync;
-  const { issuesArray: issuesDefault, commentsArray } = shouldSync
+  const { issuesArray: issuesDefault, comments } = shouldSync
     ? await getMissingIssues({
       repoOwner,
       repoName,
       updatedAt: latestIssueTime,
     })
-    : { issuesArray: [], commentsArray: [] };
+    : { issuesArray: [], comments: [] };
 
   console.log("fetched issues", {
     issueCount: issuesDefault.length,
-    commentsCount: commentsArray.length,
+    commentsCount: comments.length,
   });
 
   const commentsForIssue = (issue: TIssue) => {
-    return commentsArray.filter((comment) => comment.number === issue.number);
+    return comments.filter((comment) => comment.number === issue.number);
   };
 
-  console.log("issue 1 = ", issuesDefault[0]);
   const sortedIssues = sortBy(
     issuesDefault,
     (issue) =>
@@ -46,13 +45,16 @@ export async function getIssueData({
 
   const issuesCount = issuesDefault.length;
   const kanbanOrderKeys = generateNKeysBetween(null, null, issuesCount);
-  const formatComment = (comment: TComment) => ({
-    id: comment.comment_id,
-    issueID: comment.number.toString(),
-    created: Date.parse(comment.created_at),
-    body: comment.body || "",
-    creator: comment.creator_user_login,
-  });
+  const formatComment = (comment: TComment) => {
+    console.log("comment formatting", comment.number);
+    return {
+      id: comment.comment_id,
+      issueID: comment.number.toString(),
+      created: Date.parse(comment.created_at),
+      body: comment.body || "",
+      creator: comment.creator_user_login,
+    };
+  };
 
   const issues: SampleData = sortedIssues.map((issue, idx) => ({
     issue: {

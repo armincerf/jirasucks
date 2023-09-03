@@ -17,11 +17,17 @@ export async function getServerSideProps() {
       executor,
       genSpaceID({ repoOwner: "facebook", repoName: "react" })
     );
-    return initSpace(executor, "react", "facebook", latestReactIssueTime);
+    return initSpace(
+      executor,
+      "react",
+      "facebook",
+      latestReactIssueTime,
+      false
+    );
   });
   return {
     redirect: {
-      destination: `/d/${spaceID}`,
+      destination: `/repo/facebook/react`,
       permanent: false,
     },
   };

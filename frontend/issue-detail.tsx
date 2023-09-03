@@ -360,7 +360,7 @@ export default function IssueDetail({
             </div>
           </div>
         </div>
-        <div className=" md:block flex flex-[1_0_0] min-w-0 p-3">
+        <div className="hidden md:block flex-[1_0_0] min-w-0 p-3">
           <div className="max-w-4xl">
             <div className="flex border-solid border-b px-5">
               {/* For consistent spacing with left col */}
