@@ -194,6 +194,7 @@ export default function IssueDetail({
 
   useKeyPressed("j", handleFwd);
   useKeyPressed("k", handlePrev);
+  useKeyPressed("Escape", handleClose);
 
   const handleEdit = () => {
     setTitleText(issue?.title || "");

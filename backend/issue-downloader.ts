@@ -126,9 +126,8 @@ export async function getMissingIssues({
     opts
   );
   for await (const { data: issues } of issueIterator) {
+    console.log(`Fetched ${issues.length} issues`);
     for await (const issue of issues) {
-      // write each block of issues to a file
-      // for each issue call fetchComments
       const formattedIssue: TIssue = {
         number: issue.number,
         title: issue.title,
