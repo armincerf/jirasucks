@@ -21,6 +21,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   console.log("params", params);
   const repoOwner = params.owner.toString();
   const repoName = params.name.toString();
+
   const since = ctx.query.since?.toString();
   const sync = ctx.query.sync?.toString() === "true";
   const skipSync = ctx.query.skipSync?.toString() === "true";

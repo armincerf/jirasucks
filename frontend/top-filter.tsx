@@ -109,7 +109,8 @@ const TopFilter = ({
                 prioritySet.add(priority);
               }
               await setPriorityFilterByParam(
-                prioritySet.size === 0 ? null : [...prioritySet]
+                prioritySet.size === 0 ? null : [...prioritySet],
+                { shallow: true }
               );
             }}
             onSelectStatus={async (status) => {
@@ -120,7 +121,8 @@ const TopFilter = ({
                 statusSet.add(status);
               }
               await setStatusFilterByParam(
-                statusSet.size === 0 ? null : [...statusSet]
+                statusSet.size === 0 ? null : [...statusSet],
+                { shallow: true }
               );
             }}
           />
@@ -130,23 +132,25 @@ const TopFilter = ({
         <div className="flex items-center">
           {showSortOrderMenu && (
             <SortOrderMenu
-              onSelect={(orderBy) => setOrderByParam(orderBy)}
+              onSelect={(orderBy) =>
+                setOrderByParam(orderBy, { shallow: true })
+              }
               order={orderBy}
             />
           )}
         </div>
       </div>
       {(statusFilters && statusFilters.length) ||
-      (priorityFilters && priorityFilters.length) ? (
+        (priorityFilters && priorityFilters.length) ? (
         <div className="flex pl-2 lg:pl-9 pr-6 border-b border-gray-850 h-8">
           <FilterStatus
             filter={statusFilters}
-            onDelete={() => setStatusFilterByParam(null)}
+            onDelete={() => setStatusFilterByParam(null, { shallow: true })}
             label="Status"
           />
           <FilterStatus
             filter={priorityFilters}
-            onDelete={() => setPriorityFilterByParam(null)}
+            onDelete={() => setPriorityFilterByParam(null, { shallow: true })}
             label="Priority"
           />
         </div>

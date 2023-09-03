@@ -128,7 +128,7 @@ export default function IssueDetail({
   );
 
   const handleClose = useCallback(async () => {
-    await setDetailIssueID(null);
+    await setDetailIssueID(null, { shallow: true });
   }, [setDetailIssueID]);
 
   const handleChangePriority = useCallback(

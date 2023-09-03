@@ -8,7 +8,7 @@ import { noop } from "lodash";
 interface Props {
   placeholder: string;
   //onChange callback
-  onChange?: ChangeEventHandler;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
   className?: string;
 }
 

@@ -159,23 +159,28 @@ type State = {
   viewIssueCount: number;
   filteredIssues: Issue[];
   filters: Filters;
+  query: string | null;
   issueOrder: Order;
 };
 function timedReducer(
   state: State,
   action:
     | {
-        type: "diff";
-        diff: Diff;
-      }
+      type: "diff";
+      diff: Diff;
+    }
     | {
-        type: "setFilters";
-        filters: Filters;
-      }
+      type: "setFilters";
+      filters: Filters;
+    }
     | {
-        type: "setIssueOrder";
-        issueOrder: Order;
-      }
+      type: "setIssueOrder";
+      issueOrder: Order;
+    }
+    | {
+      type: "setSearchQuery";
+      query: string | null;
+    }
 ): State {
   const start = Date.now();
   const result = reducer(state, action);
@@ -211,29 +216,48 @@ function getOrderValue(issueOrder: Order, issue: Issue): string {
   return orderValue;
 }
 
+function issueMatchesQuery(issue: Issue, query: string): boolean {
+  if (!query) {
+    return true;
+  }
+  const lowerQuery = query.toLowerCase();
+  return (
+    issue.title.toLowerCase().includes(lowerQuery) ||
+    issue.id.toLowerCase().includes(lowerQuery)
+  );
+}
+
 function reducer(
   state: State,
   action:
     | {
-        type: "diff";
-        diff: Diff;
-      }
+      type: "diff";
+      diff: Diff;
+    }
     | {
-        type: "setFilters";
-        filters: Filters;
-      }
+      type: "setFilters";
+      filters: Filters;
+    }
     | {
-        type: "setIssueOrder";
-        issueOrder: Order;
-      }
+      type: "setIssueOrder";
+      issueOrder: Order;
+    }
+    | {
+      type: "setSearchQuery";
+      query: string | null;
+    }
 ): State {
   const filters = action.type === "setFilters" ? action.filters : state.filters;
+  const searchQuery = action.type === "setSearchQuery" ? action.query : null;
   const issueOrder =
     action.type === "setIssueOrder" ? action.issueOrder : state.issueOrder;
   const orderIteratee = partial(getOrderValue, issueOrder);
   function filterAndSort(issues: Issue[]): Issue[] {
+    console.log("Filtering and sorting", searchQuery);
     return sortBy(
-      issues.filter((issue) => filters.issuesFilter(issue)),
+      issues
+        .filter((issue) => filters.issuesFilter(issue))
+        .filter((issue) => issue.title.includes(searchQuery || "")),
       orderIteratee
     );
   }
@@ -346,6 +370,7 @@ const App = ({ rep, undoManager }: AppProps) => {
   const [view] = useQueryState("view");
   const [priorityFilter] = useQueryState("priorityFilter");
   const [statusFilter] = useQueryState("statusFilter");
+  const [searchQuery] = useQueryState("search");
   const [orderBy] = useQueryState("orderBy");
   const [detailIssueID, setDetailIssueID] = useQueryState("iss");
   const [menuVisible, setMenuVisible] = useState(false);
@@ -355,6 +380,7 @@ const App = ({ rep, undoManager }: AppProps) => {
     viewIssueCount: 0,
     filteredIssues: [],
     filters: getFilters(view, priorityFilter, statusFilter),
+    query: searchQuery,
     issueOrder: getIssueOrder(view, orderBy),
   });
 
@@ -397,6 +423,13 @@ const App = ({ rep, undoManager }: AppProps) => {
 
   useEffect(() => {
     dispatch({
+      type: "setSearchQuery",
+      query: searchQuery,
+    });
+  }, [searchQuery]);
+
+  useEffect(() => {
+    dispatch({
       type: "setIssueOrder",
       issueOrder: getIssueOrder(view, orderBy),
     });
@@ -434,8 +467,8 @@ const App = ({ rep, undoManager }: AppProps) => {
 
   const handleUpdateIssues = useCallback(
     async (issueUpdates: Array<IssueUpdate>) => {
-      const uChanges: Array<IssueUpdateWithID> = issueUpdates.map<IssueUpdateWithID>(
-        (issueUpdate) => {
+      const uChanges: Array<IssueUpdateWithID> =
+        issueUpdates.map<IssueUpdateWithID>((issueUpdate) => {
           const undoChanges = pickBy(
             issueUpdate.issue,
             (_, key) => key in issueUpdate.issueChanges
@@ -452,8 +485,7 @@ const App = ({ rep, undoManager }: AppProps) => {
             };
           }
           return rv;
-        }
-      );
+        });
       await undoManager.add({
         execute: () =>
           rep.mutate.updateIssues(
@@ -483,13 +515,14 @@ const App = ({ rep, undoManager }: AppProps) => {
     },
     [setDetailIssueID]
   );
-  const handleCloseMenu = useCallback(() => setMenuVisible(false), [
-    setMenuVisible,
-  ]);
-  const handleToggleMenu = useCallback(() => setMenuVisible(!menuVisible), [
-    setMenuVisible,
-    menuVisible,
-  ]);
+  const handleCloseMenu = useCallback(
+    () => setMenuVisible(false),
+    [setMenuVisible]
+  );
+  const handleToggleMenu = useCallback(
+    () => setMenuVisible(!menuVisible),
+    [setMenuVisible, menuVisible]
+  );
 
   const handlers = {
     undo: () => undoManager.undo(),
