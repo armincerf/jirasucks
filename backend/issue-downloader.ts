@@ -48,6 +48,7 @@ async function fetchComments({
       owner: repoOwner,
       repo: repoName,
       issue_number: issueNumber,
+      per_page: 100,
     }
   );
   const coms: TComment[] = [];
@@ -104,26 +105,27 @@ export async function getMissingIssues({
     ? new Date(updatedAt.getTime() + 86400000)
     : undefined;
 
-  const updatedISO = updatedDatePlusOneDay?.toISOString();
+  const updatedISO =
+    updatedDatePlusOneDay?.toISOString().substr(0, 10) + "T00:00:00Z";
   const baseOpts = {
     owner: repoOwner,
     repo: repoName,
     per_page: 100,
-  };
+  } as const;
   // if updatedAt is provided, only fetch issues updated after that date
-  const opts = updatedISO
-    ? {
-      ...baseOpts,
-      since: updatedISO,
-    }
-    : baseOpts;
+  const opts =
+    updatedISO && updatedISO.length === 29
+      ? {
+        ...baseOpts,
+        since: updatedISO,
+      }
+      : baseOpts;
   console.log("opts", opts);
   const issueIterator = octokit.paginate.iterator(
     octokit.rest.issues.listForRepo,
     opts
   );
   for await (const { data: issues } of issueIterator) {
-    console.log(`Fetched ${issues.length} issues`);
     for await (const issue of issues) {
       // write each block of issues to a file
       // for each issue call fetchComments
@@ -137,15 +139,6 @@ export async function getMissingIssues({
         creator_user_login: issue.user ? issue.user.login : "anon",
       };
       issuesArray.push(formattedIssue);
-      const newComments = await fetchComments({
-        repoName,
-        repoOwner,
-        issueNumber: issue.number,
-      });
-      console.log(
-        `Fetched ${newComments.length} comments for issue ${issue.number}`
-      );
-      commentsArray = commentsArray.concat(newComments);
     }
 
     console.log(

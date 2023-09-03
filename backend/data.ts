@@ -104,9 +104,14 @@ export async function initSpace(
   repoName: string,
   repoOwner: string,
   latestIssueTime: Date | undefined,
-  sync: boolean = false
+  sync: boolean,
+  skipSync: boolean = false
 ) {
   const spaceName = genSpaceID({ repoName, repoOwner });
+  if (skipSync) {
+    console.log("Skipping sync");
+    return spaceName;
+  }
   const { rows: baseSpaceRows } = await executor(
     `select version from space where id = $1`,
     [spaceName]

@@ -23,6 +23,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const repoName = params.name.toString();
   const since = ctx.query.since?.toString();
   const sync = ctx.query.sync?.toString() === "true";
+  const skipSync = ctx.query.skipSync?.toString() === "true";
   const spaceID = await transact(async (executor) => {
     await createDatabase(executor);
     const latestIssueTime = since
@@ -32,7 +33,14 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         genSpaceID({ repoOwner, repoName })
       );
     console.log("latestIssue", latestIssueTime, since, sync);
-    return initSpace(executor, repoName, repoOwner, latestIssueTime, sync);
+    return initSpace(
+      executor,
+      repoName,
+      repoOwner,
+      latestIssueTime,
+      sync,
+      skipSync
+    );
   });
   return {
     props: {
