@@ -9,6 +9,7 @@ interface Props {
   onChangePriority: (issue: Issue, priority: Priority) => void;
   onChangeStatus: (issue: Issue, status: Status) => void;
   onOpenDetail: (issue: Issue) => void;
+  onDeleteIssue: (issue: Issue) => void;
 }
 
 function IssueRow({
@@ -16,10 +17,12 @@ function IssueRow({
   onChangePriority,
   onChangeStatus,
   onOpenDetail,
+  onDeleteIssue,
 }: Props) {
   const handleChangePriority = (p: Priority) => onChangePriority(issue, p);
   const handleChangeStatus = (status: Status) => onChangeStatus(issue, status);
   const handleIssueRowClick = () => onOpenDetail(issue);
+  const handleDeleteIssue = () => onDeleteIssue(issue);
 
   return (
     <div
@@ -41,7 +44,18 @@ function IssueRow({
         {issue.title.substr(0, 3000) || ""}
       </div>
       <div className="flex-shrink-0 ml-2 font-normal sm:block">
+        {issue.creator}
+      </div>
+      <div className="flex-shrink-0 ml-2 font-normal sm:block">
         {formatDate(new Date(issue.modified))}
+      </div>
+      <div className="flex-shrink-0 ml-2 font-normal sm:block">
+        <span
+          className="px-1 text-gray-50 bg-gray-850 rounded-r cursor-pointer"
+          onMouseDown={handleDeleteIssue}
+        >
+          &times;
+        </span>
       </div>
     </div>
   );

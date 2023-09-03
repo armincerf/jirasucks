@@ -101,6 +101,9 @@ class Filters {
   }
 
   issuesFilter(issue: Issue): boolean {
+    if (issue.isDeleted) {
+      return false;
+    }
     if (this._issuesStatuses) {
       if (!this._issuesStatuses.has(issue.status)) {
         return false;

@@ -91,6 +91,7 @@ export const issueSchema = z.object({
   created: z.number(),
   creator: z.string(),
   kanbanOrder: z.string(),
+  isDeleted: z.boolean().optional(),
 });
 
 export type Issue = Immutable<z.TypeOf<typeof issueSchema>>;
@@ -103,11 +104,11 @@ export type IssueUpdate = {
   issue: Issue;
   issueChanges: Partial<IssueValue>;
   descriptionUpdate?:
-    | {
-        description: Description;
-        descriptionChange: Description;
-      }
-    | undefined;
+  | {
+    description: Description;
+    descriptionChange: Description;
+  }
+  | undefined;
 };
 
 export type IssueUpdateWithID = Immutable<{

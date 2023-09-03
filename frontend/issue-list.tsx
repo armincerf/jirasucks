@@ -22,6 +22,7 @@ type ListData = {
   issues: Issue[];
   handleChangePriority: (issue: Issue, priority: Priority) => void;
   handleChangeStatus: (issue: Issue, status: Status) => void;
+  handleDeleteIssue: (issue: Issue) => void;
   onOpenDetail: (issue: Issue) => void;
 };
 
@@ -42,6 +43,7 @@ const RawRow = ({
       onChangePriority={data.handleChangePriority}
       onChangeStatus={data.handleChangeStatus}
       onOpenDetail={data.onOpenDetail}
+      onDeleteIssue={data.handleDeleteIssue}
     />
   </div>
 );
@@ -78,9 +80,33 @@ const IssueList = ({ onUpdateIssues, onOpenDetail, issues, view }: Props) => {
     [onUpdateIssues]
   );
 
+  const handleDeleteIssue = useCallback(
+    (issue: Issue) => {
+      onUpdateIssues([
+        {
+          issue,
+          issueChanges: { isDeleted: true },
+        },
+      ]);
+    },
+    [onUpdateIssues]
+  );
+
   const itemData = useMemo(
-    () => ({ issues, handleChangePriority, handleChangeStatus, onOpenDetail }),
-    [issues, handleChangePriority, handleChangeStatus, onOpenDetail]
+    () => ({
+      issues,
+      handleChangePriority,
+      handleChangeStatus,
+      handleDeleteIssue,
+      onOpenDetail,
+    }),
+    [
+      issues,
+      handleChangePriority,
+      handleChangeStatus,
+      handleDeleteIssue,
+      onOpenDetail,
+    ]
   );
 
   return (
