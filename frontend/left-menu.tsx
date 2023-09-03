@@ -34,7 +34,9 @@ const LeftMenu = ({
     { history: "push" }
   );
 
-  const [, setSearchQuery] = useQueryState("search", { history: "push" });
+  const [searchQuery, setSearchQuery] = useQueryState("search", {
+    history: "replace",
+  });
 
   const [disableAbout] = useQueryState("disableAbout");
 
@@ -102,10 +104,11 @@ const LeftMenu = ({
         {/* Search box */}
         <div className="flex flex-col flex-shrink flex-grow overflow-y-auto mb-0.5 px-4">
           <SearchBox
+            value={searchQuery}
             placeholder="Search"
             className="mt-5"
             onChange={async (e) => {
-              await setSearchQuery(e.target.value);
+              await setSearchQuery(e.target.value, { shallow: true });
             }}
           />
           {/* actions */}

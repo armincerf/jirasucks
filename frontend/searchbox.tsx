@@ -9,12 +9,14 @@ interface Props {
   placeholder: string;
   //onChange callback
   onChange?: ChangeEventHandler<HTMLInputElement>;
+  value?: string | null;
   className?: string;
 }
 
 function SearchBox({
   placeholder = "Search",
   onChange = noop,
+  value,
   className,
 }: Props) {
   const [alertRef, setAlertRef] = useState<HTMLInputElement | null>(null);
@@ -47,6 +49,7 @@ function SearchBox({
         type="search"
         placeholder={placeholder}
         onChange={onChange}
+        value={value || ""}
         onFocus={handleDropdownClick}
         onBlur={() => setFocus(false)}
         className="w-full pl-8 pr-6 text-sm font-medium placeholder-white text-white bg-gray-900 border-gray-850 border-transparent rounded h-7 ring-0 focus:outline-none"
@@ -57,21 +60,6 @@ function SearchBox({
           "text-gray-300": focus,
         })}
       />
-      <div
-        ref={setPopperRef}
-        style={{
-          ...styles.popper,
-          display: alertVisible ? "" : "none",
-        }}
-        {...attributes.popper}
-        className="cursor-default bg-blue rounded shadow-modal z-100 w-34 p-2 mt-2"
-      >
-        <div style={styles.offset} className="text-gray-50">
-          <a href="https://github.com/rocicorp/repliear/issues/29">
-            The search feature is coming soon ...
-          </a>
-        </div>
-      </div>
     </div>
   );
 }

@@ -223,7 +223,7 @@ function issueMatchesQuery(issue: Issue, query: string): boolean {
   const lowerQuery = query.toLowerCase();
   return (
     issue.title.toLowerCase().includes(lowerQuery) ||
-    issue.id.toLowerCase().includes(lowerQuery)
+    issue.creator.toLowerCase().includes(lowerQuery)
   );
 }
 
@@ -253,13 +253,21 @@ function reducer(
     action.type === "setIssueOrder" ? action.issueOrder : state.issueOrder;
   const orderIteratee = partial(getOrderValue, issueOrder);
   function filterAndSort(issues: Issue[]): Issue[] {
-    console.log("Filtering and sorting", searchQuery);
-    return sortBy(
+    if (issues.length === 0) return [];
+    const q = (
+      searchQuery?.toLowerCase() ??
+      state.query?.toLowerCase() ??
+      ""
+    ).trim();
+    const res = sortBy(
       issues
         .filter((issue) => filters.issuesFilter(issue))
-        .filter((issue) => issue.title.includes(searchQuery || "")),
+        .filter((issue) => issueMatchesQuery(issue, q)),
+
       orderIteratee
     );
+    console.log("filterAndSort", issues.length, res.length, q);
+    return res;
   }
   function countViewIssues(issues: Issue[]): number {
     let count = 0;
@@ -276,15 +284,23 @@ function reducer(
       return diffReducer(state, action.diff);
     }
     case "setFilters": {
-      if (action.filters.equals(state.filters)) {
-        return state;
-      }
       const allIssues = [...state.allIssuesMap.values()];
+      const filteredIssues = filterAndSort(allIssues);
       return {
         ...state,
-        viewIssueCount: countViewIssues(allIssues),
+        viewIssueCount: allIssues.length,
         filters: action.filters,
-        filteredIssues: filterAndSort(allIssues),
+        filteredIssues,
+      };
+    }
+    case "setSearchQuery": {
+      const allIssues = [...state.allIssuesMap.values()];
+      const filteredIssues = filterAndSort(allIssues);
+      return {
+        ...state,
+        query: action.query,
+        viewIssueCount: allIssues.length,
+        filteredIssues: filteredIssues,
       };
     }
     case "setIssueOrder": {
@@ -298,8 +314,6 @@ function reducer(
       };
     }
   }
-
-  return state;
 }
 
 function diffReducer(state: State, diff: Diff): State {
@@ -426,7 +440,7 @@ const App = ({ rep, undoManager }: AppProps) => {
       type: "setSearchQuery",
       query: searchQuery,
     });
-  }, [searchQuery]);
+  }, [searchQuery, state.allIssuesMap.size]);
 
   useEffect(() => {
     dispatch({
@@ -609,7 +623,7 @@ const RawLayout = ({
               onToggleMenu={onToggleMenu}
               title={getTitle(view)}
               filteredIssuesCount={
-                state.filters.hasNonViewFilters
+                state.filters.hasNonViewFilters || state.query
                   ? state.filteredIssues.length
                   : undefined
               }
