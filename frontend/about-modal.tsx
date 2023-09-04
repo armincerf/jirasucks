@@ -71,7 +71,7 @@ export default function AboutModal({ isOpen, onDismiss }: Props) {
       </div>
       <div className="flex flex-col flex-1 px-8 pt-4 pb-8 overflow-y-auto">
         <P noTopMargin>
-          This is a loving &hearts; tribute to the{" "}
+          This is a tribute to the{" "}
           <A href="https://linear.app/">Linear issue tracker</A> built with{" "}
           <A href="https://replicache.dev">Replicache</A>
           {" and "}

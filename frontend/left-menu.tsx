@@ -60,6 +60,10 @@ const LeftMenu = ({
     }
   });
 
+  const changeView = async (view: string | null) => {
+    await setLayoutViewParams({ view, iss: null }, { shallow: true });
+  };
+
   const router = useRouter();
   const { owner, name } = router.query;
   const repo = `${owner}/${name}`;
@@ -81,7 +85,7 @@ const LeftMenu = ({
             <div
               className="flex items-center p-2 pr-3 rounded cursor-pointer hover:bg-gray-850"
               onMouseDown={async () => {
-                await setLayoutViewParams({ view: null, iss: null });
+                await changeView(null);
                 onCloseMenu && onCloseMenu();
               }}
             >
@@ -117,7 +121,7 @@ const LeftMenu = ({
             <div
               className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
               onMouseDown={async () => {
-                await setLayoutViewParams({ view: "all", iss: null });
+                await changeView("all");
                 onCloseMenu && onCloseMenu();
               }}
             >
@@ -127,7 +131,7 @@ const LeftMenu = ({
             <div
               className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
               onMouseDown={async () => {
-                await setLayoutViewParams({ view: "active", iss: null });
+                await changeView("active");
                 onCloseMenu && onCloseMenu();
               }}
             >
@@ -137,7 +141,7 @@ const LeftMenu = ({
             <div
               className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
               onMouseDown={async () => {
-                await setLayoutViewParams({ view: "backlog", iss: null });
+                await changeView("backlog");
                 onCloseMenu && onCloseMenu();
               }}
             >
@@ -146,7 +150,7 @@ const LeftMenu = ({
             <div
               className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
               onMouseDown={async () => {
-                await setLayoutViewParams({ view: "board", iss: null });
+                await changeView("board");
                 onCloseMenu && onCloseMenu();
               }}
             >
