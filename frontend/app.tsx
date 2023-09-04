@@ -51,11 +51,23 @@ class Filters {
   ) {
     this._viewStatuses = undefined;
     switch (view?.toLowerCase()) {
+      case "all":
+        this._viewStatuses = new Set([
+          Status.TODO,
+          Status.IN_PROGRESS,
+          Status.DONE,
+          Status.CANCELED,
+          Status.BACKLOG,
+        ]);
+        break;
       case "active":
         this._viewStatuses = new Set([Status.IN_PROGRESS, Status.TODO]);
         break;
       case "backlog":
         this._viewStatuses = new Set([Status.BACKLOG]);
+        break;
+      case "deleted":
+        this._viewStatuses = new Set([Status.DELETED]);
         break;
       default:
         this._viewStatuses = undefined;
@@ -97,17 +109,22 @@ class Filters {
   }
 
   viewFilter(issue: Issue): boolean {
-    return this._viewStatuses ? this._viewStatuses.has(issue.status) : true;
+    if (this._viewStatuses) {
+      if (this._viewStatuses.has(Status.DELETED)) {
+        return !!issue.isDeleted;
+      }
+      if (issue.isDeleted) {
+        return false;
+      }
+      return this._viewStatuses.has(issue.status);
+    } else {
+      return true;
+    }
   }
 
   issuesFilter(issue: Issue): boolean {
-    if (issue.isDeleted) {
-      return false;
-    }
     if (this._issuesStatuses) {
-      if (!this._issuesStatuses.has(issue.status)) {
-        return false;
-      }
+      return this._issuesStatuses.has(issue.status);
     }
     if (this._issuesPriorities) {
       if (!this._issuesPriorities.has(issue.priority)) {
@@ -152,6 +169,8 @@ function getTitle(view: string | null) {
       return "Backlog issues";
     case "board":
       return "Board";
+    case "deleted":
+      return "Deleted issues";
     default:
       return "All issues";
   }
@@ -264,7 +283,7 @@ function reducer(
     ).trim();
     const res = sortBy(
       issues
-        .filter((issue) => filters.issuesFilter(issue))
+        .filter((issue) => filters.viewFilter(issue))
         .filter((issue) => issueMatchesQuery(issue, q)),
 
       orderIteratee

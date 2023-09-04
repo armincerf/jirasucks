@@ -13,6 +13,7 @@ import { queryTypes, useQueryState, useQueryStates } from "next-usequerystate";
 import AboutModal from "./about-modal";
 import { noop } from "lodash";
 import { useRouter } from "next/router";
+import classNames from "classnames";
 
 interface Props {
   // Show menu (for small screen only)
@@ -29,7 +30,7 @@ const LeftMenu = ({
   onCloseMenu = noop,
   onCreateIssue,
 }: Props) => {
-  const [, setLayoutViewParams] = useQueryStates(
+  const [viewParam, setLayoutViewParams] = useQueryStates(
     { view: queryTypes.string, iss: queryTypes.string },
     { history: "push" }
   );
@@ -63,6 +64,8 @@ const LeftMenu = ({
   const changeView = async (view: string | null) => {
     await setLayoutViewParams({ view, iss: null }, { shallow: true });
   };
+
+  const views = ["all", "active", "backlog", "deleted", "board"];
 
   const router = useRouter();
   const { owner, name } = router.query;
@@ -118,44 +121,24 @@ const LeftMenu = ({
           {/* actions */}
 
           <ItemGroup title="Issues">
-            <div
-              className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
-              onMouseDown={async () => {
-                await changeView("all");
-                onCloseMenu && onCloseMenu();
-              }}
-            >
-              <span>All</span>
-            </div>
-
-            <div
-              className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
-              onMouseDown={async () => {
-                await changeView("active");
-                onCloseMenu && onCloseMenu();
-              }}
-            >
-              <span>Active</span>
-            </div>
-
-            <div
-              className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
-              onMouseDown={async () => {
-                await changeView("backlog");
-                onCloseMenu && onCloseMenu();
-              }}
-            >
-              <span>Backlog</span>
-            </div>
-            <div
-              className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
-              onMouseDown={async () => {
-                await changeView("board");
-                onCloseMenu && onCloseMenu();
-              }}
-            >
-              <span>Board</span>
-            </div>
+            {views.map((view) => (
+              <div
+                className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
+                onMouseDown={async () => {
+                  await changeView(view);
+                  onCloseMenu && onCloseMenu();
+                }}
+              >
+                <span
+                  className={classNames("capitalize", {
+                    "text-gray-50": view === viewParam.view,
+                    "text-gray-400": view !== viewParam.view,
+                  })}
+                >
+                  {view}
+                </span>
+              </div>
+            ))}
           </ItemGroup>
 
           {/* extra space */}

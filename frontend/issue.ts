@@ -45,6 +45,7 @@ export enum Status {
   IN_PROGRESS = "IN_PROGRESS",
   DONE = "DONE",
   CANCELED = "CANCELED",
+  DELETED = "DELETED",
 }
 
 export const statusOrderValues: Record<Status, string> = {
@@ -58,6 +59,8 @@ export const statusOrderValues: Record<Status, string> = {
   DONE: "4",
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CANCELED: "5",
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  DELETED: "6",
 };
 
 export const statusEnumSchema = z.nativeEnum(Status);
