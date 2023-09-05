@@ -275,21 +275,23 @@ function reducer(
     }
     case "setFilters": {
       const allIssues = [...state.allIssuesMap.values()];
+      const viewIssues = allIssues.filter((issue) => filters.viewFilter(issue));
       const filteredIssues = filterAndSort(allIssues);
       return {
         ...state,
-        viewIssueCount: allIssues.length,
+        viewIssueCount: viewIssues.length,
         filters: action.filters,
         filteredIssues,
       };
     }
     case "setSearchQuery": {
       const allIssues = [...state.allIssuesMap.values()];
+      const viewIssues = allIssues.filter((issue) => filters.viewFilter(issue));
       const filteredIssues = filterAndSort(allIssues);
       return {
         ...state,
         query: action.query,
-        viewIssueCount: allIssues.length,
+        viewIssueCount: viewIssues.length,
         filteredIssues: filteredIssues,
       };
     }
