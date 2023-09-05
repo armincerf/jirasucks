@@ -262,11 +262,10 @@ function reducer(
     const res = sortBy(
       issues
         .filter((issue) => filters.viewFilter(issue))
+        .filter((issue) => filters.issuesFilter(issue))
         .filter((issue) => issueMatchesQuery(issue, q)),
-
       orderIteratee
     );
-    console.log("filterAndSort", issues.length, res.length, q);
     return res;
   }
 
