@@ -7,13 +7,12 @@ import { useClickOutside } from "./hooks/useClickOutside";
 import classnames from "classnames";
 import SearchBox from "./searchbox";
 import IssueModal from "./issue-modal";
-import ReactLogo from "./assets/images/logo.svg";
 import type { Description, Issue } from "./issue";
 import { queryTypes, useQueryState, useQueryStates } from "next-usequerystate";
 import AboutModal from "./about-modal";
 import { noop } from "lodash";
-import { useRouter } from "next/router";
 import classNames from "classnames";
+import ProjectMenu from "./projects-menu";
 
 interface Props {
   // Show menu (for small screen only)
@@ -65,11 +64,7 @@ const LeftMenu = ({
     await setLayoutViewParams({ view, iss: null }, { shallow: true });
   };
 
-  const views = ["all", "active", "backlog", "deleted", "board"];
-
-  const router = useRouter();
-  const { owner, name } = router.query;
-  const repo = `${owner}/${name}`;
+  const views = ["all", "active", "backlog", "board"];
 
   return (
     <>
@@ -85,15 +80,7 @@ const LeftMenu = ({
         <div className="flex flex-col flex-grow-0 flex-shrink-0 px-5 py-3">
           <div className="flex items-center justify-between">
             {/* Project selection */}
-            <div
-              className="flex items-center p-2 pr-3 rounded cursor-pointer hover:bg-gray-850"
-              onMouseDown={async () => {
-                await changeView(null);
-                onCloseMenu && onCloseMenu();
-              }}
-            >
-              <div className="text-sm font-medium">{repo}</div>
-            </div>
+            <ProjectMenu />
           </div>
 
           {/* Create issue btn */}
@@ -123,6 +110,7 @@ const LeftMenu = ({
           <ItemGroup title="Issues">
             {views.map((view) => (
               <div
+                key={view}
                 className="flex items-center pl-9 rounded cursor-pointer group h-8 hover:bg-gray-900"
                 onMouseDown={async () => {
                   await changeView(view);

@@ -1,16 +1,10 @@
 import type { AppProps } from "next/app";
 
 import Head from "next/head";
-import { useEffect } from "react";
 
 import "../styles/index.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
-  useEffect(() => {
-    window.addEventListener("online", () => {
-      const rep = window.rep;
-    });
-  }, []);
   return (
     <>
       <Head>

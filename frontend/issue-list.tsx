@@ -14,6 +14,7 @@ import type { Issue, IssueUpdate, Priority, Status } from "./issue";
 interface Props {
   onUpdateIssues: (issueUpdates: IssueUpdate[]) => void;
   onOpenDetail: (issue: Issue) => void;
+  onDeleteIssues: (issues: Issue[]) => void;
   issues: Issue[];
   view: string | null;
 }
@@ -50,7 +51,13 @@ const RawRow = ({
 
 const Row = memo(RawRow);
 
-const IssueList = ({ onUpdateIssues, onOpenDetail, issues, view }: Props) => {
+const IssueList = ({
+  onUpdateIssues,
+  onOpenDetail,
+  onDeleteIssues,
+  issues,
+  view,
+}: Props) => {
   const fixedSizeListRef = useRef<FixedSizeList>(null);
   useEffect(() => {
     fixedSizeListRef.current?.scrollTo(0);
@@ -82,14 +89,9 @@ const IssueList = ({ onUpdateIssues, onOpenDetail, issues, view }: Props) => {
 
   const handleDeleteIssue = useCallback(
     (issue: Issue) => {
-      onUpdateIssues([
-        {
-          issue,
-          issueChanges: { isDeleted: true },
-        },
-      ]);
+      onDeleteIssues([issue]);
     },
-    [onUpdateIssues]
+    [onDeleteIssues]
   );
 
   const itemData = useMemo(

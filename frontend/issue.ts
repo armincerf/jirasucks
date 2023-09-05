@@ -45,7 +45,6 @@ export enum Status {
   IN_PROGRESS = "IN_PROGRESS",
   DONE = "DONE",
   CANCELED = "CANCELED",
-  DELETED = "DELETED",
 }
 
 export const statusOrderValues: Record<Status, string> = {
@@ -59,8 +58,6 @@ export const statusOrderValues: Record<Status, string> = {
   DONE: "4",
   // eslint-disable-next-line @typescript-eslint/naming-convention
   CANCELED: "5",
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  DELETED: "6",
 };
 
 export const statusEnumSchema = z.nativeEnum(Status);
@@ -94,7 +91,6 @@ export const issueSchema = z.object({
   created: z.number(),
   creator: z.string(),
   kanbanOrder: z.string(),
-  isDeleted: z.boolean().optional(),
 });
 
 export type Issue = Immutable<z.TypeOf<typeof issueSchema>>;

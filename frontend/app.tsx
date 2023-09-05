@@ -51,23 +51,11 @@ class Filters {
   ) {
     this._viewStatuses = undefined;
     switch (view?.toLowerCase()) {
-      case "all":
-        this._viewStatuses = new Set([
-          Status.TODO,
-          Status.IN_PROGRESS,
-          Status.DONE,
-          Status.CANCELED,
-          Status.BACKLOG,
-        ]);
-        break;
       case "active":
         this._viewStatuses = new Set([Status.IN_PROGRESS, Status.TODO]);
         break;
       case "backlog":
         this._viewStatuses = new Set([Status.BACKLOG]);
-        break;
-      case "deleted":
-        this._viewStatuses = new Set([Status.DELETED]);
         break;
       default:
         this._viewStatuses = undefined;
@@ -109,22 +97,14 @@ class Filters {
   }
 
   viewFilter(issue: Issue): boolean {
-    if (this._viewStatuses) {
-      if (this._viewStatuses.has(Status.DELETED)) {
-        return !!issue.isDeleted;
-      }
-      if (issue.isDeleted) {
-        return false;
-      }
-      return this._viewStatuses.has(issue.status);
-    } else {
-      return true;
-    }
+    return this._viewStatuses ? this._viewStatuses.has(issue.status) : true;
   }
 
   issuesFilter(issue: Issue): boolean {
     if (this._issuesStatuses) {
-      return this._issuesStatuses.has(issue.status);
+      if (!this._issuesStatuses.has(issue.status)) {
+        return false;
+      }
     }
     if (this._issuesPriorities) {
       if (!this._issuesPriorities.has(issue.priority)) {
@@ -169,8 +149,6 @@ function getTitle(view: string | null) {
       return "Backlog issues";
     case "board":
       return "Board";
-    case "deleted":
-      return "Deleted issues";
     default:
       return "All issues";
   }
@@ -290,15 +268,6 @@ function reducer(
     );
     console.log("filterAndSort", issues.length, res.length, q);
     return res;
-  }
-  function countViewIssues(issues: Issue[]): number {
-    let count = 0;
-    for (const issue of issues) {
-      if (filters.viewFilter(issue)) {
-        count++;
-      }
-    }
-    return count;
   }
 
   switch (action.type) {
@@ -501,6 +470,18 @@ const App = ({ rep, undoManager }: AppProps) => {
     [rep.mutate, undoManager]
   );
 
+  const handleDeleteIssues = useCallback(
+    async (issues: Array<Issue>) => {
+      await undoManager.add({
+        execute: () => rep.mutate.deleteIssues(issues),
+        undo: () => {
+          console.log("undo deleteIssues", issues);
+        },
+      });
+    },
+    [rep.mutate, undoManager]
+  );
+
   const handleUpdateIssues = useCallback(
     async (issueUpdates: Array<IssueUpdate>) => {
       const uChanges: Array<IssueUpdateWithID> =
@@ -582,6 +563,7 @@ const App = ({ rep, undoManager }: AppProps) => {
         onCloseMenu={handleCloseMenu}
         onToggleMenu={handleToggleMenu}
         onUpdateIssues={handleUpdateIssues}
+        onDeleteIssues={handleDeleteIssues}
         onCreateIssue={handleCreateIssue}
         onCreateComment={handleCreateComment}
         onOpenDetail={handleOpenDetail}
@@ -605,6 +587,7 @@ interface LayoutProps {
   onCloseMenu: () => void;
   onToggleMenu: () => void;
   onUpdateIssues: (issueUpdates: IssueUpdate[]) => void;
+  onDeleteIssues: (issues: Issue[]) => void;
   onCreateIssue: (
     issue: Omit<Issue, "kanbanOrder">,
     description: Description
@@ -623,6 +606,7 @@ const RawLayout = ({
   onCloseMenu,
   onToggleMenu,
   onUpdateIssues,
+  onDeleteIssues,
   onCreateIssue,
   onCreateComment,
   onOpenDetail,
@@ -680,6 +664,7 @@ const RawLayout = ({
                 <IssueList
                   issues={state.filteredIssues}
                   onUpdateIssues={onUpdateIssues}
+                  onDeleteIssues={onDeleteIssues}
                   onOpenDetail={onOpenDetail}
                   view={view}
                 />

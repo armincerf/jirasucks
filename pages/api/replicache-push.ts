@@ -12,7 +12,8 @@ import { getSyncOrder } from "../../backend/sync-order";
 import { mutators } from "../../frontend/mutators";
 import { z } from "zod";
 import type { MutatorDefs } from "replicache";
-import Pusher from "pusher";
+import { createClient } from "@supabase/supabase-js";
+import { supabaseAnonKey, supabaseUrl } from "util/constants";
 
 // TODO: Either generate schema from mutator types, or vice versa, to tighten this.
 // See notes in bug: https://github.com/rocicorp/replidraw/issues/47
@@ -141,26 +142,33 @@ const push = async (req: NextApiRequest, res: NextApiResponse) => {
 
   console.log("Processed all mutations in", Date.now() - t0);
 
-  if (
-    process.env.NEXT_PUBLIC_PUSHER_APP_ID &&
-    process.env.NEXT_PUBLIC_PUSHER_KEY &&
-    process.env.NEXT_PUBLIC_PUSHER_SECRET &&
-    process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-  ) {
+  if (supabaseUrl && supabaseAnonKey) {
     const startPoke = Date.now();
-
-    const pusher = new Pusher({
-      appId: process.env.NEXT_PUBLIC_PUSHER_APP_ID,
-      key: process.env.NEXT_PUBLIC_PUSHER_KEY,
-      secret: process.env.NEXT_PUBLIC_PUSHER_SECRET,
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-      useTLS: true,
+    const sb = createClient(supabaseUrl, supabaseAnonKey);
+    const channel = sb.channel(spaceID);
+    channel.subscribe(async (status) => {
+      switch (status) {
+        case "CLOSED":
+          console.log("Channel closed");
+          break;
+        case "TIMED_OUT":
+          console.log("Channel timed out");
+          break;
+        case "CHANNEL_ERROR":
+          console.log("Channel error");
+          break;
+        case "SUBSCRIBED":
+          console.log("Channel subscribed");
+          await channel.send({
+            type: "broadcast",
+            event: "poke",
+          });
+          console.log("Poke took", Date.now() - startPoke);
+          break;
+      }
     });
-
-    await pusher.trigger("default", "poke", {});
-    console.log("Poke took", Date.now() - startPoke);
   } else {
-    console.log("Not poking because Pusher is not configured");
+    console.log("Not poking because Realtime is not configured");
   }
   res.status(200).json({});
 };

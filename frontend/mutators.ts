@@ -9,6 +9,7 @@ import {
   Issue,
   commentKey,
   IssueUpdateWithID,
+  issueKey,
 } from "./issue";
 
 export type M = typeof mutators;
@@ -49,6 +50,15 @@ export const mutators = {
       }
     }
   },
+  deleteIssues: async (
+    tx: WriteTransaction,
+    issues: Issue[]
+  ): Promise<void> => {
+    for (const issue of issues) {
+      await tx.del(issueKey(issue.id));
+    }
+  },
+
   putIssueComment: async (
     tx: WriteTransaction,
     comment: Comment,

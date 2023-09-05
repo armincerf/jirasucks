@@ -12,7 +12,6 @@ export type IssuesByStatusType = {
   [Status.IN_PROGRESS]: Issue[];
   [Status.DONE]: Issue[];
   [Status.CANCELED]: Issue[];
-  [Status.DELETED]: Issue[];
 };
 
 export const getIssueByType = (allIssues: Issue[]): IssuesByStatusType => {
@@ -23,7 +22,6 @@ export const getIssueByType = (allIssues: Issue[]): IssuesByStatusType => {
     [Status.IN_PROGRESS]: [],
     [Status.DONE]: [],
     [Status.CANCELED]: [],
-    [Status.DELETED]: [],
   };
   const result = { ...defaultIssueByType, ...issuesBySType };
   return result;

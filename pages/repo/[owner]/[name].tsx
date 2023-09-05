@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Replicache } from "replicache";
 import { M, mutators } from "frontend/mutators";
 import App from "frontend/app";
-import Pusher from "pusher-js";
 import { UndoManager } from "@rocicorp/undo";
 import { transact } from "backend/pg";
 import {
@@ -12,6 +11,8 @@ import {
 } from "backend/data";
 import type { GetServerSideProps } from "next";
 import { genSpaceID } from "util/common";
+import { replicacheKey, supabaseAnonKey, supabaseUrl } from "util/constants";
+import { createClient } from "@supabase/supabase-js";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const params = ctx.params;
@@ -57,6 +58,10 @@ export default function Home({ spaceID }: { spaceID: string }) {
     // disabled eslint await requirement
     // eslint-disable-next-line
     (async () => {
+      if (!replicacheKey) {
+        console.error("Replicache key is not set");
+        return;
+      }
       if (rep) {
         return;
       }
@@ -67,28 +72,27 @@ export default function Home({ spaceID }: { spaceID: string }) {
         name: spaceID,
         mutators,
         pullInterval: 30000,
-        // To get your own license key run `npx replicache get-license`. (It's free.)
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        licenseKey: process.env.NEXT_PUBLIC_REPLICACHE_LICENSE_KEY!,
+        licenseKey: replicacheKey,
       });
 
-      if (
-        process.env.NEXT_PUBLIC_PUSHER_KEY &&
-        process.env.NEXT_PUBLIC_PUSHER_CLUSTER
-      ) {
-        const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-          cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
-        });
+      if (supabaseAnonKey && supabaseUrl) {
+        const client = createClient(supabaseUrl, supabaseAnonKey);
+        const channel = client.channel(spaceID);
+        channel
+          .on("broadcast", { event: "poke" }, () => {
+            console.log("poke received");
+            return r.pull();
+          })
+          .subscribe();
 
-        const channel = pusher.subscribe("default");
-        channel.bind("poke", () => {
-          r.pull();
-        });
+        console.log("channel", channel);
+      } else {
+        console.error("Supabase key or url is not set");
       }
 
       setRep(r);
     })();
-  }, [rep]);
+  }, [rep, spaceID]);
 
   if (!rep) {
     return null;
