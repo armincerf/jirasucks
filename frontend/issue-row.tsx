@@ -6,13 +6,10 @@ import PriorityMenu from "./priority-menu";
 import StatusMenu from "./status-menu";
 import classNames from "classnames";
 import { useSubscribe } from "replicache-react";
-import type { Replicache } from "replicache";
-import type { M } from "./mutators";
 import { useAtomValue } from "jotai";
 import { repAtom } from "util/atoms";
 
 interface Props {
-  rep: Replicache<M>;
   issue: Issue;
   onChangePriority: (issue: Issue, priority: Priority) => void;
   onChangeStatus: (issue: Issue, status: Status) => void;
@@ -69,9 +66,11 @@ function IssueRow({
         <div className="flex-wrap flex-shrink-1 flex-grow ml-2 overflow-hidden font-medium line-clamp-1 overflow-ellipsis ">
           {issue.title.substr(0, 3000) || ""}
         </div>
-        <div className="flex-shrink-0 ml-2 font-normal sm:block hidden">
-          {`${issueCommentCount} Comments`}
-        </div>
+        {issueCommentCount > 0 && (
+          <div className="flex-shrink-0 ml-2 font-normal sm:block hidden">
+            {`${issueCommentCount} Comments`}
+          </div>
+        )}
         <div className="flex-shrink-0 ml-2 font-normal md:hidden sm:block hidden">
           {issue.creator}
         </div>
