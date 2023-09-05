@@ -41,6 +41,7 @@ const ProjectMenu = () => {
       repoOwner: "xtdb",
       repoName: "xtdb",
     },
+    { repoOwner: "peej", repoName: "to.uri.st" },
     {
       repoOwner: "facebook",
       repoName: "react",

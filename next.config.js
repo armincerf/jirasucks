@@ -6,6 +6,7 @@ module.exports = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+
   // set port to 3001
   port: 3001,
   eslint: {

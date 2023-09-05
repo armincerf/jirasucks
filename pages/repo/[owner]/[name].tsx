@@ -13,6 +13,8 @@ import type { GetServerSideProps } from "next";
 import { genSpaceID } from "util/common";
 import { replicacheKey, supabaseAnonKey, supabaseUrl } from "util/constants";
 import { createClient } from "@supabase/supabase-js";
+import { useAtom } from "jotai";
+import { repAtom } from "util/atoms";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const params = ctx.params;
@@ -52,7 +54,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 };
 
 export default function Home({ spaceID }: { spaceID: string }) {
-  const [rep, setRep] = useState<Replicache<M> | null>(null);
+  const [rep, setRep] = useAtom(repAtom);
   const undoManagerRef = useRef(new UndoManager());
   useEffect(() => {
     // disabled eslint await requirement
