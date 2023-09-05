@@ -39,8 +39,8 @@ const pushRequestSchema = z.union([pushRequestV0Schema, pushRequestV1Schema]);
 
 const push = async (req: NextApiRequest, res: NextApiResponse) => {
   console.log("Processing push", JSON.stringify(req.body, null, ""));
-
   const spaceID = req.query["spaceID"].toString();
+
   const push = pushRequestSchema.parse(req.body);
   const { pushVersion } = push;
 
@@ -133,19 +133,11 @@ const push = async (req: NextApiRequest, res: NextApiResponse) => {
     }
     return true;
   });
-
-  if (!result) {
-    res.status(404);
-    res.end();
-    return;
-  }
-
-  console.log("Processed all mutations in", Date.now() - t0);
-
   if (supabaseUrl && supabaseAnonKey) {
     const startPoke = Date.now();
     const sb = createClient(supabaseUrl, supabaseAnonKey);
     const channel = sb.channel(spaceID);
+
     channel.subscribe(async (status) => {
       switch (status) {
         case "CLOSED":
@@ -167,10 +159,23 @@ const push = async (req: NextApiRequest, res: NextApiResponse) => {
           break;
       }
     });
+    await sleep(300);
   } else {
     console.log("Not poking because Realtime is not configured");
   }
+
+  if (!result) {
+    res.status(404);
+    res.end();
+    return;
+  }
+
+  console.log("Processed all mutations in", Date.now() - t0);
   res.status(200).json({});
 };
 
 export default push;
+
+async function sleep(n: number) {
+  return new Promise((resolve) => setTimeout(resolve, n));
+}
