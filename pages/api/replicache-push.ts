@@ -135,7 +135,9 @@ const push = async (req: NextApiRequest, res: NextApiResponse) => {
   });
   if (supabaseUrl && supabaseAnonKey) {
     const startPoke = Date.now();
-    const sb = createClient(supabaseUrl, supabaseAnonKey);
+    const sb = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { persistSession: false },
+    });
     const channel = sb.channel(spaceID);
 
     channel.subscribe(async (status) => {

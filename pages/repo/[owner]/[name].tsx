@@ -78,7 +78,9 @@ export default function Home({ spaceID }: { spaceID: string }) {
       });
 
       if (supabaseAnonKey && supabaseUrl) {
-        const client = createClient(supabaseUrl, supabaseAnonKey);
+        const client = createClient(supabaseUrl, supabaseAnonKey, {
+          auth: { persistSession: false },
+        });
         const channel = client.channel(spaceID);
         channel
           .on("broadcast", { event: "poke" }, () => {

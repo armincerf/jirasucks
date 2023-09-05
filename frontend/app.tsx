@@ -476,7 +476,11 @@ const App = ({ rep, undoManager }: AppProps) => {
       await undoManager.add({
         execute: () => rep.mutate.deleteIssues(issues),
         undo: () => {
-          console.log("undo deleteIssues", issues);
+          for (const issue of issues) {
+            rep.mutate.putIssue({
+              issue: { ...issue },
+            });
+          }
         },
       });
     },
@@ -499,7 +503,7 @@ const App = ({ rep, undoManager }: AppProps) => {
           if (descriptionUpdate) {
             return {
               ...rv,
-              descriptionChange: descriptionUpdate.description,
+              descriptionChange: descriptionUpdate.descriptionChange,
             };
           }
           return rv;
@@ -515,7 +519,7 @@ const App = ({ rep, undoManager }: AppProps) => {
               if (descriptionUpdate) {
                 return {
                   ...rv,
-                  descriptionChange: descriptionUpdate.description,
+                  descriptionChange: descriptionUpdate.descriptionChange,
                 };
               }
               return rv;

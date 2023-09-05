@@ -21,11 +21,13 @@ export const mutators = {
       description,
     }: {
       issue: Issue;
-      description: Description;
+      description?: Description;
     }
   ): Promise<void> => {
     await putIssue(tx, issue);
-    await putIssueDescription(tx, issue.id, description);
+    if (description !== undefined) {
+      await putIssueDescription(tx, issue.id, description);
+    }
   },
   updateIssues: async (
     tx: WriteTransaction,
