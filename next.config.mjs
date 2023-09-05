@@ -14,6 +14,18 @@ export const eslint = {
 export const experimental = {
   swcPlugins: [["@swc-jotai/react-refresh", {}]],
 };
+export async function rewrites() {
+  return [
+    {
+      source: "/t.js",
+      destination: "https://analytics.umami.is/script.js",
+    },
+    {
+      source: "/api/send",
+      destination: "https://analytics.umami.is/api/send",
+    },
+  ];
+}
 export function webpack(config) {
   config.module.rules.push({
     test: /\.svg$/i,
